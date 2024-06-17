@@ -8,14 +8,13 @@
 */
 CREATE TABLE "author"(
     "steamid" integer NOT NULL,
-    "last_played" integer,
     "num_games_owned" integer,
     "num_reviews" integer,
     "last_time_fetched" varchar(255),
     PRIMARY KEY("steamid")
 );
 
--- INSERT INTO author VALUES(?, ?, ?, ?, ?);
+-- INSERT INTO author VALUES(?, ?, ?, ?);
 
 /*
 * This table contains the game information.
@@ -56,6 +55,7 @@ CREATE TABLE "review" (
     "author_playtime_at_review" integer,
     "author_playtime_forever" integer,
     "author_playtime_last_two_weeks" integer,
+    "author_last_played" integer,
     "last_time_fetched" varchar(255),
     PRIMARY KEY("author_steamid", "app_id"),
     FOREIGN KEY("author_steamid") REFERENCES "author"("steamid"),
