@@ -4,6 +4,8 @@ This module contains the main functionality of the Steam User Reviews Scraper.
 
 import sys
 import urllib.parse
+from datetime import datetime
+import time
 import requests
 import config
 from app import database
@@ -65,40 +67,84 @@ class Main:
 
         print(app_ids)
         for app_id in app_ids:
-            cursor = config.CURSOR
-            has_cursor = True
+            cursor: str = config.CURSOR
+            cursors: set = set()
+            number_of_cursors: int = 0
+            has_cursor: bool = True
             while has_cursor:
+                
                 # build the URL
                 self.url_builder.set_cursor(cursor)
                 self.url_builder.set_appid(app_id)
                 self.url_builder.build()
                 self.url = self.url_builder.get_url()
 
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"{current_time}: app_id: {app_id} cursor: {cursor}           url: {self.url}")
+
                 # request the reviews
-                response = self.request_reviews(self.url)
-                # check if the response contains reviews
+                response: dict = self.request_reviews(self.url)
+                last_time_fetched: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                # * insert / update app info
-                # * insert / update author info
-                # * insert / update review info
+                if self.database.is_app_exists(app_id):
+                    self.database.update_app_last_time_fetched(app_id, last_time_fetched)
+                    # print("Updated app")
 
-                if len(response) > 0 and "reviews" in response:
-                    for review in response.get("reviews"):
-                        # TODO: implement the data processing
-                        # if self.database.is_review_exists(data[0], data[1]):
-                        #     self.database.update_review(data)
-                        # else:
-                        #     self.database.insert_review(data)
-                        pass
-                else:
+                if response == {}:
                     has_cursor = False
+
+                for review in response.get("reviews"):
+
+                    author = review.get("author")
+                    author.update({"last_time_fetched": last_time_fetched})
+                    if self.database.is_author_exists(author.get("steamid")):
+                        self.database.update_author(author)
+                        # print("Updated author")
+                    else:
+                        self.database.insert_author(author)
+                        # print("Inserted author")
+
+                    review_data: dict = review
+
+                    review_data.update({"app_id": app_id})
+                    review_data.update({"author_steamid": author.get("steamid")})
+                    review_data.update({"last_time_fetched":last_time_fetched})
+                    review_data.update({"author_playtime_at_review":
+                                        review.get("author").get("playtime_at_review")})
+                    review_data.update({"author_playtime_forever":
+                                        review.get("author").get("playtime_forever")})
+                    review_data.update({"author_playtime_last_two_weeks":
+                                        review.get("author").get("playtime_last_two_weeks")})
+                    review_data.update({"author_last_played":
+                                        review.get("author").get("last_played")})
+                    review_data.pop("author")
+
+                    if self.database.is_review_exists(
+                                    review_data.get("author_steamid"),
+                                    review_data.get("app_id")
+                                    ):
+                        self.database.update_review(review_data)
+                        # print("Updated review")
+                    else:
+                        self.database.insert_review(review_data)
+                        # print("Inserted review")
+                self.database.commit()
 
                 # * update cursor
-                cursor = response.get("cursor", None)
+                cursor = response.get("cursor")
+                # print(cursor)
                 if cursor is not None:
                     cursor = urllib.parse.quote(cursor)
+                    cursors.add(cursor)
+                    if number_of_cursors != len(cursors):
+                        number_of_cursors = len(cursors)
+                    else:
+                        has_cursor = False
                 else:
                     has_cursor = False
+
+                # * sleep for 1 second to avoid rate limiting
+                time.sleep(1)
 
         self.database.close()
 

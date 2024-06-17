@@ -3,6 +3,7 @@
 
 import sqlite3
 import config
+from datetime import datetime
 
 class Database:
     """
@@ -59,7 +60,7 @@ class Database:
             self.cursor.execute("INSERT INTO app VALUES (?, ?, ?, ?)", data)
         except sqlite3.Error as e:
             print(f"Error {e}: for {data}")
-        self.connection.commit()
+        # self.connection.commit()
 
 
     def is_app_exists(self, app_id: int) -> bool:
@@ -75,22 +76,44 @@ class Database:
         self.cursor.execute("SELECT * FROM app WHERE id = ?", (app_id,))
         return self.cursor.fetchone() is not None
 
-
-    def insert_author(self, data: tuple) -> None:
+    def update_app_last_time_fetched(self, app_id: int, last_time_fetched: str) -> None:
         """
-        Inserts an author into the database.
+        Update the last time fetched for a specific app in the database.
 
         Args:
-            data (tuple): A tuple containing the author data.
+            app_id (int): The ID of the app to update.
+            last_time_fetched (str): The last time the app was fetched.
 
         Returns:
             None
         """
+        data = (last_time_fetched, app_id)
         try:
-            self.cursor.execute("INSERT INTO author VALUES(?, ?, ?, ?, ?);", data)
+            self.cursor.execute("UPDATE app SET last_time_fetched = ? WHERE id = ?", data)
         except sqlite3.Error as e:
             print(f"Error {e}: for {data}")
-        self.connection.commit()
+        # self.connection.commit()
+
+    def insert_author(self, author: dict) -> None:
+        """
+        Inserts author data into the database.
+
+        Args:
+            author (dict): A dictionary containing author information.
+
+        Returns:
+            None
+        """
+        data = (author.get("steamid"),
+                author.get("num_games_owned"),
+                author.get("num_reviews"),
+                author.get("last_time_fetched")
+                )
+        try:
+            self.cursor.execute("INSERT INTO author VALUES(?, ?, ?, ?);", data)
+        except sqlite3.Error as e:
+            print(f"Error {e}: for {data}")
+        # self.connection.commit()
 
     def is_author_exists(self, steamid: int) -> bool:
         """
@@ -105,38 +128,146 @@ class Database:
         self.cursor.execute("SELECT * FROM author WHERE steamid = ?", (steamid,))
         return self.cursor.fetchone() is not None
 
+    def update_author(self, author: dict) -> None:
+        """
+        Updates an author in the database.
 
-    def insert_review(self, data: tuple) -> None:
+        Args:
+            author (dict): A dictonary containing the author data.
+
+        Returns:
+            None
+        """
+        data = (author.get("num_games_owned"),
+                author.get("num_reviews"),
+                author.get("last_time_fetched"),
+                author.get("steamid")
+                )
+
+        try:
+            self.cursor.execute("""
+                                UPDATE author 
+                                SET 
+                                    num_games_owned = ?, 
+                                    num_reviews = ?, 
+                                    last_time_fetched = ? 
+                                WHERE steamid = ?
+                                """, data)
+        except sqlite3.Error as e:
+            print(f"Error {e}: for {data}")
+        # self.connection.commit()
+
+
+
+    def insert_review(self, review: dict) -> None:
         """
         Inserts a review into the database.
 
         Args:
-            data (tuple): A tuple containing the review data.
+            review (dict): A dictionary containing the review data.
 
         Returns:
             None
         """
+        data: tuple = (
+            review.get("author_steamid"),
+            review.get("app_id"),
+            review.get("comment_count"),
+            review.get("hidden_in_steam_china"),
+            review.get("language"),
+            review.get("received_for_free"),
+            review.get("recommendationid"),
+            review.get("review"),
+            review.get("steam_china_location"),
+            review.get("steam_purchase"),
+            review.get("timestamp_created"),
+            review.get("timestamp_updated"),
+            review.get("voted_up"),
+            review.get("votes_funny"),
+            review.get("votes_up"),
+            review.get("weighted_vote_score"),
+            review.get("written_during_early_access"),
+            review.get("author_playtime_at_review"),
+            review.get("author_playtime_forever"),
+            review.get("author_playtime_last_two_weeks"),
+            review.get("author_last_played"),
+            review.get("last_time_fetched")
+        )
+
         try:
-            self.cursor.execute("INSERT INTO review VALUES (?, ?, ?, ?, ?)", data)
+            self.cursor.execute("""
+                        INSERT INTO review
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, data)
         except sqlite3.Error as e:
             print(f"Error {e}: for {data}")
-        self.connection.commit()
+        # self.connection.commit()
 
-    def update_review(self, data: tuple) -> None:
+    def update_review(self, review: dict) -> None:
         """
-        Updates a review in the database.
+        Update a review in the database.
 
         Args:
-            data (tuple): A tuple containing the review data.
+            review (dict): The review data to be updated.
 
         Returns:
             None
         """
+        data: tuple = (review.get("comment_count"),
+                review.get("hidden_in_steam_china"),
+                review.get("language"),
+                review.get("received_for_free"),
+                review.get("recommendationid"),
+                review.get("review"),
+                review.get("steam_china_location"),
+                review.get("steam_purchase"),
+                review.get("timestamp_created"),
+                review.get("timestamp_updated"),
+                review.get("voted_up"),
+                review.get("votes_funny"),
+                review.get("votes_up"),
+                review.get("weighted_vote_score"),
+                review.get("written_during_early_access"),
+                review.get("author_playtime_at_review"),
+                review.get("author_playtime_forever"),
+                review.get("author_playtime_last_two_weeks"),
+                review.get("author_last_played"),
+                review.get("last_time_fetched")
+        )
+        author_steamid: str = review.get("author_steamid")
+        app_id: str = review.get("app_id")
+        data = data + (author_steamid, app_id)
+
         try:
-            self.cursor.execute("UPDATE review SET review = ? WHERE id = ?", data)
+            self.cursor.execute("""
+                    UPDATE review
+                    SET comment_count = ?,
+                        hidden_in_steam_china = ?,
+                        language = ?,
+                        received_for_free = ?,
+                        recommendationid = ?,
+                        review = ?,
+                        steam_china_location = ?,
+                        steam_purchase = ?,
+                        timestamp_created = ?,
+                        timestamp_updated = ?,
+                        voted_up = ?,
+                        votes_funny = ?,
+                        votes_up = ?,
+                        weighted_vote_score = ?,
+                        written_during_early_access = ?,
+                        author_playtime_at_review = ?,
+                        author_playtime_forever = ?,
+                        author_playtime_last_two_weeks = ?,
+                        author_last_played = ?,
+                        last_time_fetched = ?
+                    WHERE author_steamid = ?
+                    AND app_id = ?
+                    """,
+                data)
         except sqlite3.Error as e:
-            print(f"Error {e}: for {data}")
-        self.connection.commit()
+            print(f"Error {e}: for {review}")
+        # self.connection.commit()
 
     def is_review_exists(self, author_steamid: int, app_id: int) -> bool:
         """

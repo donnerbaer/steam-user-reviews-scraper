@@ -1,4 +1,5 @@
 
-__pycache__/
-test.ipynb
+__pycache__
+**.ipynb
 **/**.db
+**test**
