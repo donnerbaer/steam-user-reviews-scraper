@@ -54,6 +54,7 @@ def import_apps(file_path: str = config.APPS_PATH,
                 db.insert_app(data)
             except sqlite3.Error as e:
                 print(f"Error {e}: for {line}")
+            db.commit()
         db.close()
 
 def display_help() -> None:
