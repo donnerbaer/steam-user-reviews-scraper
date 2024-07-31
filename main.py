@@ -72,7 +72,6 @@ class Main:
             number_of_cursors: int = 0
             has_cursor: bool = True
             while has_cursor:
-                
                 # build the URL
                 self.url_builder.set_cursor(cursor)
                 self.url_builder.set_appid(app_id)

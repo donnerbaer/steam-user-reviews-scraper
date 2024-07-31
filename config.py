@@ -19,9 +19,9 @@ CURSOR = "*"  # cursor to get next page, empty for first page
 
 # use type: None or "" (empty string) for don't filter
 FILTER = ""  # all, recent, updated, all_time, funny, helpful, awards
-LANGUAGE = "german,english"  # replace with your language, for multiple languages use comma "german,english"
-DAY_RANGE = ""  # 0, 1, 7, 30, 90, 180, max = 365
-REVIEW_TYPE = ""  # all, positive, negative
+LANGUAGE = "english"  # replace with your language, for multiple languages use comma "german,english"
+DAY_RANGE = "365"  # 0, 1, 7, 30, 90, 180, max = 365
+REVIEW_TYPE = "all"  # all, positive, negative
 PURCHASE_TYPE = ""  # all, non_steam_purchase, steam
 NUM_PER_PAGE = "100"  # max 100, default 20
 FILTER_OFFTOPIC_ACTIVITY = ""  # 0, 1

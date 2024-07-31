@@ -1,9 +1,10 @@
-""" This module contains the Database class, which is responsible for connecting to the SQLite database and inserting data into it.
+""" This module contains the Database class, which is responsible for connecting to 
+    the SQLite database and inserting data into it.
 """
 
 import sqlite3
 import config
-from datetime import datetime
+# from datetime import datetime
 
 class Database:
     """
@@ -191,13 +192,15 @@ class Database:
             review.get("author_playtime_forever"),
             review.get("author_playtime_last_two_weeks"),
             review.get("author_last_played"),
+            review.get("developer_response"),
+            review.get("timestamp_dev_responded"),
             review.get("last_time_fetched")
         )
 
         try:
             self.cursor.execute("""
                         INSERT INTO review
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """, data)
         except sqlite3.Error as e:
             print(f"Error {e}: for {data}")
@@ -232,6 +235,8 @@ class Database:
                 review.get("author_playtime_forever"),
                 review.get("author_playtime_last_two_weeks"),
                 review.get("author_last_played"),
+                review.get("developer_response"),
+                review.get("timestamp_dev_responded"),
                 review.get("last_time_fetched")
         )
         author_steamid: str = review.get("author_steamid")
@@ -260,6 +265,8 @@ class Database:
                         author_playtime_forever = ?,
                         author_playtime_last_two_weeks = ?,
                         author_last_played = ?,
+                        developer_response = ?,
+                        timestamp_dev_responded = ?,
                         last_time_fetched = ?
                     WHERE author_steamid = ?
                     AND app_id = ?
