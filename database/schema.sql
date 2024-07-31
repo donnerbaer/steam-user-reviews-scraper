@@ -2,6 +2,11 @@
 * This file contains the DDL for the database.
 */
 
+-- DROP TABLE IF EXISTS "author";
+-- DROP TABLE IF EXISTS "app";
+-- DROP TABLE IF EXISTS "review";
+
+
 /*
 * This table contains the user information.
 * The steam_id is the primary key.
@@ -56,6 +61,8 @@ CREATE TABLE "review" (
     "author_playtime_forever" integer,
     "author_playtime_last_two_weeks" integer,
     "author_last_played" integer,
+    "developer_response" text,
+    "timestamp_dev_responded" text,
     "last_time_fetched" varchar(255),
     PRIMARY KEY("author_steamid", "app_id"),
     FOREIGN KEY("author_steamid") REFERENCES "author"("steamid"),
